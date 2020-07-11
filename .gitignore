@@ -5,7 +5,7 @@ data/
 .DS_Store
 .vscode/
 
-# dependencies
+# Dependencies
 **/node_modules
 **/.pnp
 **/.pnp.js
