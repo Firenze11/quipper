@@ -1,6 +1,6 @@
 import functools
 from flask import Blueprint, request, session, url_for, jsonify
-from .parse_subtitles import parse_file
+from .parse_subtitles import parse_file, format_time
 
 import pathlib
 
@@ -17,14 +17,18 @@ def health():
 @bp.route("/subtitles/")
 def get_subtiles():
     print(pathlib.Path(__file__).parent.absolute())
-
     print(pathlib.Path().absolute())
-    print('aaaaaaaaa')
 
     movie_id = request.args.get("movie_id", "")
     # subtitles = parse_file(filepath)
-    filepath = "/Users/lezhili/work/quipper/data/Spider-Man.Into.the.Spider-Verse.2018.720p.BluRay.x264-SPARKS.srt"
-    return jsonify([list(st_record) for st_record in parse_file(filepath)])
+    filepath = "/data/Spider-Man.Into.the.Spider-Verse.2018.720p.BluRay.x264-SPARKS.srt"
+
+    return jsonify(
+        [
+            [[format_time(timerange[0]), format_time(timerange[1])], sentence]
+            for (ind, timerange, sentence) in parse_file(filepath)
+        ]
+    )
 
 
 @bp.route("/")
@@ -35,4 +39,3 @@ def hello():
 @bp.route("/api/cut")
 def cut():
     return "ok i will cut next time"
-
