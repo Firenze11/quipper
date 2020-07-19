@@ -7,6 +7,6 @@ docker run \
   -v $DIR/../backend:/backend \
   -p 0.0.0.0:5000:5000/tcp \
   -e FLASK_ENV=development \
-  -e FLASK_APP=/backend/app.py \
+  -e FLASK_APP=/backend \
   quipper \
   flask run --host=0.0.0.0
