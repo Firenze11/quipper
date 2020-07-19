@@ -10,7 +10,14 @@ def health():
     return 'OK'
 
 
-@app.route('/')
+@app.route("/subtitles/")
+def get_subtiles():
+    movie_id = request.args.get("movie_id", "")
+    print(movie_id)
+    return "Hello World!"
+
+
+@app.route("/")
 def hello():
     return 'Hello Noah'
 
@@ -42,6 +49,3 @@ def cut_links():
 
 def invalid_timestamp(ts):
     return False
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
