@@ -12,7 +12,7 @@ def health():
 @app.route("/subtitles/")
 def get_subtiles():
     movie_id = request.args.get("movie_id", "")
-    print(searchword)
+    print(movie_id)
     return "Hello World!"
 
 
@@ -23,6 +23,3 @@ def hello():
 @app.route('/api/cut')
 def cut():
     return 'ok i will cut next time'
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
