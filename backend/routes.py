@@ -46,9 +46,8 @@ def cut():
 
     start_subs_at(orig_subs_filepath, trunc_subs_filepath, parse_timestamp(start))
 
-    subprocess.Popen(["/run.sh", movie_filepath, trunc_subs_filepath, start, end, out_path])
+    subprocess.Popen(["/backend/cut.sh", movie_filepath, trunc_subs_filepath, start, end, out_path])
     return 'http://0.0.0.0:5000/out/' + path.basename(out_path)
-    # return 200 with output url
 
 @bp.route('/out/<filename>')
 def out(filename):

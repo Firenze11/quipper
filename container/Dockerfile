@@ -8,5 +8,3 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ADD requirements.txt /requirements.txt
 
 RUN pip3 install -r requirements.txt
-
-ADD run.sh /run.sh
