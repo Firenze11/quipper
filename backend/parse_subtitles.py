@@ -36,7 +36,6 @@ def parse_file(filepath):
 def write_srt_file(filepath, subtitles):
     with open(filepath, "w") as fp:
         for (idx, time_range, text) in subtitles:
-            print(idx)
             fp.write(str(idx))
             fp.write('\n')
             fp.write(format_time(time_range[0]))

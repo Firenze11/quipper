@@ -7,9 +7,6 @@ SUBTITLES=$2
 START_TIME=$3
 END_TIME=$4
 
-echo start time $START_TIME
-echo end time $END_TIME
-
 #OUTFILE="/data/cut.mp4"
 #
 #rm -f $OUTFILE
@@ -41,8 +38,12 @@ echo end time $END_TIME
 #   -vcodec libx264 -crf 27 -preset veryfast \
 #   $OUTFILE
 
-OUTGIF="/data/cut.gif"
+OUTGIF=$5
+mkdir -p `dirname $OUTGIF`
+mkdir -p /tmp/gifs
+TMPGIF=/tmp/gifs/`basename $OUTGIF`
 rm -f $OUTGIF
+rm -f $TMPGIF
 
 # As always with ffmpeg, the order of arguments is very important! -ss and
 # -to must come before -i to ensure that ffmpeg does a fast seek rather than
@@ -52,4 +53,6 @@ ffmpeg \
   -to $END_TIME \
   -i "$MOVIE" \
   -filter_complex "[0:v] subtitles=filename=$SUBTITLES:force_style='Fontsize=36',fps=12,scale=w=600:h=-1,split [a][b];[a] palettegen=stats_mode=single [p];[b][p] paletteuse=new=1" \
-  $OUTGIF
+  $TMPGIF
+
+mv $TMPGIF $OUTGIF

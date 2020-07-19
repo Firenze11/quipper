@@ -2,6 +2,7 @@ import functools
 import subprocess
 import re
 from datetime import timedelta
+from os import path
 
 from flask import Blueprint, request, session, url_for, send_from_directory
 
@@ -40,13 +41,21 @@ def cut():
 
     movie_filepath = '/data/Spider-Man.Into.The.Spider-Verse.mp4'
     orig_subs_filepath = '/data/Spider-Man.Into.The.Spider-Verse.srt'
-    trunc_subs_filepath = '/data/Spider-Man.Into.The.Spider-Verse-{}.srt'.format(start.replace(':', '-').replace('.', '-'))
+    trunc_subs_filepath = '/data/Spider-Man.Into.The.Spider-Verse-{}.srt'.format(make_path_friendly(start))
+    out_path = '/data/out/spider-verse.{}.{}.gif'.format(make_path_friendly(start), make_path_friendly(end))
 
     start_subs_at(orig_subs_filepath, trunc_subs_filepath, parse_timestamp(start))
 
-    subprocess.run(["/run.sh", movie_filepath, trunc_subs_filepath, start, end])
-    return send_from_directory("/data", "cut.gif")
+    subprocess.Popen(["/run.sh", movie_filepath, trunc_subs_filepath, start, end, out_path])
+    return 'http://0.0.0.0:5000/out/' + path.basename(out_path)
     # return 200 with output url
+
+@bp.route('/out/<filename>')
+def out(filename):
+    if path.exists(path.join('/data/out', filename)):
+        return send_from_directory('/data/out', filename)
+    else:
+        return 'processing...'
 
 RE_TIMESTAMP = "^(\d{2}):(\d{2}):(\d{2}).(\d{3})$"
 def parse_timestamp(time_str):
@@ -60,7 +69,10 @@ def parse_timestamp(time_str):
 
 
 def format_timestamp_for_filepath(td):
-    return str(td)[0:-3].replace(':', '-').replace('.', '-')
+    return make_path_friendly(str(td)[0:-3])
+
+def make_path_friendly(s):
+    return s.replace(':', '-').replace('.', '-')
 
 @bp.route('/cut_links')
 def cut_links():
