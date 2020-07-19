@@ -1,7 +1,11 @@
 import functools
 import subprocess
+import re
+from datetime import timedelta
 
 from flask import Blueprint, request, session, url_for, send_from_directory
+
+from .parse_subtitles import start_subs_at
 
 # from backend.db import get_db
 
@@ -34,9 +38,29 @@ def cut():
     if invalid_timestamp(start) or invalid_timestamp(end):
         return '400'
 
-    subprocess.run(["/run.sh", start, end])
+    movie_filepath = '/data/Spider-Man.Into.The.Spider-Verse.mp4'
+    orig_subs_filepath = '/data/Spider-Man.Into.The.Spider-Verse.srt'
+    trunc_subs_filepath = '/data/Spider-Man.Into.The.Spider-Verse-{}.srt'.format(start.replace(':', '-').replace('.', '-'))
+
+    start_subs_at(orig_subs_filepath, trunc_subs_filepath, parse_timestamp(start))
+
+    subprocess.run(["/run.sh", movie_filepath, trunc_subs_filepath, start, end])
     return send_from_directory("/data", "cut.gif")
     # return 200 with output url
+
+RE_TIMESTAMP = "^(\d{2}):(\d{2}):(\d{2}).(\d{3})$"
+def parse_timestamp(time_str):
+    match = re.match(RE_TIMESTAMP, time_str)
+    return timedelta(
+        hours=int(match.group(1)),
+        minutes=int(match.group(2)),
+        seconds=int(match.group(3)),
+        milliseconds=int(match.group(4))
+    )
+
+
+def format_timestamp_for_filepath(td):
+    return str(td)[0:-3].replace(':', '-').replace('.', '-')
 
 @bp.route('/cut_links')
 def cut_links():

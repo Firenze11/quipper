@@ -12,12 +12,10 @@ def parse_file(filepath):
         # loop until end of file
         while line:
             ind = line.rstrip("\n")
-            print(ind)
             # f_out.write(ind + ",")
 
             line = f_in.readline()
             time_range_strs = line.rstrip().split(" --> ")
-            print(time_range_strs)
             time_range = [parse_time(t) for t in time_range_strs]
             # f_out.write(time_range[0] + "," + time_range[1] + ",")
 
@@ -38,7 +36,8 @@ def parse_file(filepath):
 def write_srt_file(filepath, subtitles):
     with open(filepath, "w") as fp:
         for (idx, time_range, text) in subtitles:
-            fp.write(idx)
+            print(idx)
+            fp.write(str(idx))
             fp.write('\n')
             fp.write(format_time(time_range[0]))
             fp.write(' --> ')
@@ -62,16 +61,23 @@ def parse_time(time_str):
     )
 
 def format_time(td):
-    return str(td)[0:-3].replace('.', ',')
+    res = str(td)
+    if '.' in res:
+        res = res[0:-3].replace('.', ',')
+    else:
+        res += ',000'
+    return res
 
 def start_subs_at(orig_srt_filepath, trunc_srt_filepath, start_at):
     orig_subs = parse_file(orig_srt_filepath)
     trunc_subs = []
+    idx = 1
     for sub in orig_subs:
         new_start = sub[1][0] - start_at
         new_end = sub[1][1] - start_at
         if new_start.total_seconds() >= 0:
-            trunc_subs.append((sub[0], [new_start, new_end], sub[2]))
+            trunc_subs.append((idx, [new_start, new_end], sub[2]))
+            idx += 1
     write_srt_file(trunc_srt_filepath, trunc_subs)
 
 def main():
