@@ -1,27 +1,30 @@
+import functools
 import subprocess
-import os
-from flask import Flask, send_from_directory, request
 
-app = Flask(__name__)
+from flask import Blueprint, request, session, url_for, send_from_directory
+
+# from backend.db import get_db
+
+bp = Blueprint("main", __name__, url_prefix="/")
 
 
-@app.route('/health')
+@bp.route("/health")
 def health():
-    return 'OK'
+    return "OK"
 
 
-@app.route("/subtitles/")
+@bp.route("/subtitles/")
 def get_subtiles():
     movie_id = request.args.get("movie_id", "")
     print(movie_id)
     return "Hello World!"
 
 
-@app.route("/")
+@bp.route("/")
 def hello():
-    return 'Hello Noah'
+    return "Hello Noah aaa"
 
-@app.route('/api/cut')
+@bp.route('/api/cut')
 def cut():
     try:
         start = request.args['start']
@@ -35,7 +38,7 @@ def cut():
     return send_from_directory("/data", "cut.gif")
     # return 200 with output url
 
-@app.route('/cut_links')
+@bp.route('/cut_links')
 def cut_links():
     timestamps = [
         ['00:01:19.193', '00:01:23.463', 'my name is peter parker'],
