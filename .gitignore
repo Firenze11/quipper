@@ -1,8 +1,10 @@
-# Data files
+# Data files (to mount in the docker container)
 data/
 
-# Editors
+# macOS shit
 .DS_Store
+
+# Editors
 .vscode/
 
 # Dependencies
