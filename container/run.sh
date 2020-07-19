@@ -4,12 +4,15 @@
 MOVIE="/data/Spider-Man.Into.The.Spider-Verse.mp4"
 SUBTITLES="/data/Spider-Man.Into.The.Spider-Verse.srt"
 
-START_TIME="00:01:19"
-END_TIME="00:01:23"
+START_TIME=$1
+END_TIME=$2
 
-OUTFILE="/data/cut.mp4"
+echo start time $START_TIME
+echo end time $END_TIME
 
-rm -f $OUTFILE
+#OUTFILE="/data/cut.mp4"
+#
+#rm -f $OUTFILE
 
 # ffmpeg \
 #   -ss $START_TIME \
@@ -20,7 +23,7 @@ rm -f $OUTFILE
 #   -copyts \
 #   -async 1 $OUTFILE
 
-TMP_SRT="/data/tmp.srt"
+TMP_SRT="/data/into-the-spider-verse-${START_TIME//:}.srt"
 rm -f $TMP_SRT
 
 # First, we must generate a version of the SRT starting at $START_TIME,
