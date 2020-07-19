@@ -4,9 +4,9 @@ from flask import request
 app = Flask(__name__)
 
 
-@app.route("/health")
+@app.route('/health')
 def health():
-    return "OK"
+    return 'OK'
 
 
 @app.route("/subtitles/")
@@ -18,8 +18,11 @@ def get_subtiles():
 
 @app.route("/")
 def hello():
-    return "Hello World!"
+    return 'Hello Noah'
 
+@app.route('/api/cut')
+def cut():
+    return 'ok i will cut next time'
 
-if __name__ == "__main__":
-    app.run()
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)

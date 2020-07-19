@@ -1,13 +1,12 @@
-FROM debian:buster-slim
-
-# for python:
-#FROM python:3.8.3-slim-buster
+FROM python:3.8.3-slim-buster
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   ffmpeg
 
 # ls /data
 
-ADD run.sh /run.sh
+ADD requirements.txt /requirements.txt
 
-CMD /run.sh
+RUN pip3 install -r requirements.txt
+
+ADD run.sh /run.sh
