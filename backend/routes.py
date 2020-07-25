@@ -4,7 +4,9 @@ import re
 from datetime import timedelta
 from os import path
 from flask import Blueprint, request, session, url_for, send_from_directory, jsonify
+from flask_restplus import reqparse
 from .parse_subtitles import start_subs_at, parse_file, format_time
+from .search import Searchable
 
 
 # utils
@@ -53,6 +55,39 @@ def get_subtiles():
         [
             [[format_time(timerange[0]), format_time(timerange[1])], sentence]
             for (ind, timerange, sentence) in parse_file(filepath)
+        ]
+    )
+
+
+search_parser = reqparse.RequestParser()
+search_parser.add_argument(
+    "search_term", required=True, help="Search term cannot be empty"
+)
+
+
+@bp.route("/api/search/")
+def search():
+    args = search_parser.parse_args()
+    search_term = args.get("search_term")
+    corpus_path = (
+        "/data/Spider-Man.Into.the.Spider-Verse.2018.720p.BluRay.x264-SPARKS.srt"
+    )
+    corpus = Searchable(corpus=corpus_path)
+    matches = corpus.search(search_term, method="kmp")
+
+    return jsonify(
+        [
+            [
+                {
+                    "movie": "Spider-Man.Into.the.Spider-Verse",
+                    "index": subtitle.ind,
+                    "start": format_time(subtitle.time_range[0]),
+                    "end": format_time(subtitle.time_range[1]),
+                    "text": subtitle.sentence,
+                }
+                for subtitle in match
+            ]
+            for match in matches
         ]
     )
 

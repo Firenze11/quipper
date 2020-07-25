@@ -7,7 +7,7 @@ from ..parse_subtitles import parse_file, Subtitle
 
 
 class Searchable:
-    def __init__(self, corpus: str, method=None) -> None:
+    def __init__(self, corpus: str) -> None:
         """
         Params:
             corpus: string, filepath to substitle files
@@ -15,12 +15,12 @@ class Searchable:
         """
         self.corpus = self.parse_corpus(corpus)
         if self.corpus:
-            self.corpus_indexed = self.index_corpus(self.corpus, method=method)
+            self.corpus_indexed = self.index_corpus(self.corpus)
 
     def parse_corpus(self, corpus: str) -> Optional[Generator[Subtitle, None, None]]:
         return parse_file(corpus)
 
-    def index_corpus(self, method=None):
+    def index_corpus(self, corpus, method=None):
         return corpus
 
     def search(self, search_term, method="kmp"):
