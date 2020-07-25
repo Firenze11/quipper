@@ -7,6 +7,33 @@ from flask import Blueprint, request, session, url_for, send_from_directory, jso
 from .parse_subtitles import start_subs_at, parse_file, format_time
 
 
+# utils
+RE_TIMESTAMP = "^(\d{2}):(\d{2}):(\d{2}).(\d{3})$"
+
+
+def parse_timestamp(time_str):
+    match = re.match(RE_TIMESTAMP, time_str)
+    return timedelta(
+        hours=int(match.group(1)),
+        minutes=int(match.group(2)),
+        seconds=int(match.group(3)),
+        milliseconds=int(match.group(4)),
+    )
+
+
+def format_timestamp_for_filepath(td):
+    return make_path_friendly(str(td)[0:-3])
+
+
+def make_path_friendly(s):
+    return s.replace(":", "-").replace(".", "-")
+
+
+def invalid_timestamp(ts):
+    return False
+
+
+# routes
 bp = Blueprint("main", __name__, url_prefix="/")
 
 
@@ -70,27 +97,6 @@ def out(filename):
         return "processing..."
 
 
-RE_TIMESTAMP = "^(\d{2}):(\d{2}):(\d{2}).(\d{3})$"
-
-
-def parse_timestamp(time_str):
-    match = re.match(RE_TIMESTAMP, time_str)
-    return timedelta(
-        hours=int(match.group(1)),
-        minutes=int(match.group(2)),
-        seconds=int(match.group(3)),
-        milliseconds=int(match.group(4)),
-    )
-
-
-def format_timestamp_for_filepath(td):
-    return make_path_friendly(str(td)[0:-3])
-
-
-def make_path_friendly(s):
-    return s.replace(":", "-").replace(".", "-")
-
-
 @bp.route("/cut_links")
 def cut_links():
     timestamps = [
@@ -102,7 +108,3 @@ def cut_links():
     for ts in timestamps:
         links.append('<div><a href="/api/cut?start={}&end={}">{}</a></div>'.format(*ts))
     return "<body>\n" + "\n".join(links) + "</body>"
-
-
-def invalid_timestamp(ts):
-    return False
