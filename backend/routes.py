@@ -57,11 +57,6 @@ def get_subtiles():
     )
 
 
-@bp.route("/")
-def hello():
-    return "Hello Noah"
-
-
 @bp.route("/api/cut")
 def cut():
     try:
@@ -108,3 +103,8 @@ def cut_links():
     for ts in timestamps:
         links.append('<div><a href="/api/cut?start={}&end={}">{}</a></div>'.format(*ts))
     return "<body>\n" + "\n".join(links) + "</body>"
+
+
+@bp.route("/")
+def hello():
+    return "Hello Noah"
