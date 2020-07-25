@@ -6,6 +6,7 @@ docker run \
   -v $DIR/../data:/data \
   -v $DIR/../backend:/backend \
   -p 0.0.0.0:5000:5000/tcp \
+  -e PYTHONUNBUFFERED=1 \
   -e FLASK_ENV=development \
   -e FLASK_APP=/backend \
   quipper \

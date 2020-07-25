@@ -3,11 +3,13 @@ import os
 import re
 from datetime import timedelta
 
+RE_TIME = "^(\d{2}):(\d{2}):(\d{2}),(\d{3})$"
+
 
 def parse_file(filepath):
     # f_out = open("temp.csv", "a+")
 
-    with open(filepath, "r") as f_in:
+    with open(filepath, "r", encoding="utf-8-sig") as f_in:
         line = f_in.readline()
         # loop until end of file
         while line:
@@ -32,20 +34,18 @@ def parse_file(filepath):
     # f_out.close()
 
 
-
 def write_srt_file(filepath, subtitles):
     with open(filepath, "w") as fp:
         for (idx, time_range, text) in subtitles:
             fp.write(str(idx))
-            fp.write('\n')
+            fp.write("\n")
             fp.write(format_time(time_range[0]))
-            fp.write(' --> ')
+            fp.write(" --> ")
             fp.write(format_time(time_range[1]))
-            fp.write('\n')
+            fp.write("\n")
             fp.write(text)
-            fp.write('\n\n')
+            fp.write("\n\n")
 
-RE_TIME = "^(\d{2}):(\d{2}):(\d{2}),(\d{3})$"
 
 def parse_time(time_str):
     match = re.match(RE_TIME, time_str)
@@ -59,13 +59,15 @@ def parse_time(time_str):
         hours=hour, minutes=minute, seconds=second, milliseconds=millisecond
     )
 
+
 def format_time(td):
     res = str(td)
-    if '.' in res:
-        res = res[0:-3].replace('.', ',')
+    if "." in res:
+        res = res[0:-3].replace(".", ",")
     else:
-        res += ',000'
+        res += ",000"
     return res
+
 
 def start_subs_at(orig_srt_filepath, trunc_srt_filepath, start_at):
     orig_subs = parse_file(orig_srt_filepath)
@@ -79,23 +81,10 @@ def start_subs_at(orig_srt_filepath, trunc_srt_filepath, start_at):
             idx += 1
     write_srt_file(trunc_srt_filepath, trunc_subs)
 
-def main():
-    # filepath = sys.argv[1]
-    # if not os.path.isfile(filepath):
-    #     print("File path {} does not exist. Exiting...".format(filepath))
-    #     sys.exit()
-    filepath = "/Users/lezhili/work/quipper/data/Spider-Man.Into.the.Spider-Verse.2018.720p.BluRay.x264-SPARKS.srt"
-    cnt = 0
-    for record in parse_file(filepath):
-        print(record)
-        cnt += 1
-        if cnt > 100:
-            break
-
 
 if __name__ == "__main__":
     start_subs_at(
         "/Users/noah/quipper/data/Spider-Man.Into.The.Spider-Verse.srt",
         "/Users/noah/quipper/data/bleh.srt",
-        timedelta(hours=0, minutes=2, seconds=28, milliseconds=162))
-
+        timedelta(hours=0, minutes=2, seconds=28, milliseconds=162),
+    )
