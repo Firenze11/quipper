@@ -39,10 +39,14 @@ END_TIME=$4
 #   $OUTFILE
 
 OUTGIF=$5
+if [ -e "$OUTGIF" ]
+then
+  exit 0
+fi
+
 mkdir -p `dirname $OUTGIF`
 mkdir -p /tmp/gifs
 TMPGIF=/tmp/gifs/`basename $OUTGIF`
-rm -f $OUTGIF
 rm -f $TMPGIF
 
 # As always with ffmpeg, the order of arguments is very important! -ss and

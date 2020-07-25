@@ -59,7 +59,7 @@ def cut():
     subprocess.Popen(
         ["/backend/cut.sh", movie_filepath, trunc_subs_filepath, start, end, out_path]
     )
-    return "http://0.0.0.0:5000/out/" + path.basename(out_path)
+    return "/out/" + path.basename(out_path)
 
 
 @bp.route("/out/<filename>")
