@@ -64,6 +64,7 @@ function App() {
     <div css={appStyle}>
       <div css={headerStyle}>
         <h1>Quipper</h1>
+        <Search/>
       </div>
       <div css={linesStyle}>
         <Lines setGIFURL={setGIFURL} />
@@ -73,6 +74,15 @@ function App() {
       </div>
     </div>
   );
+}
+
+function Search() {
+  const [searchTerm, setSearchTerm] = useState('')
+  const onSearchtermChange = (event) => {
+    const value = event.target.value
+    setSearchTerm(value)
+  }
+  return <input value={searchTerm} onChange={onSearchtermChange}/>
 }
 
 function Lines({ setGIFURL }) {
