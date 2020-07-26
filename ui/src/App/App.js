@@ -31,7 +31,10 @@ class GenericAPI {
 const API = new GenericAPI();
 
 const appStyle = css`
+  position: absolute;
   height: 100%;
+  width: 100%;
+  max-width: 1200px;
   display: grid;
   grid-template-rows: [header] 100px [output] 1fr [end];
   grid-template-columns: [left] 50% [right] 50%;
@@ -58,7 +61,6 @@ const viewerStyle = css`
 const GifState = { none: 'none', loading: 'loading', ready: 'ready' };
 
 function App() {
-  //useEffect(() => fetch('http://localhost:3000/subtitles/?movie_id=123'), []);
   const [gifURL, setGIFURL] = useState(null);
   return (
     <div css={appStyle}>
@@ -69,11 +71,18 @@ function App() {
         <Lines setGIFURL={setGIFURL} />
       </div>
       <div css={viewerStyle}>
-        <ClipDemo gifURL={gifURL} setGIFURL={setGIFURL} />
+        <GIFLoader src={gifURL} />
       </div>
     </div>
   );
 }
+
+const lineStyle = css`
+  &:hover {
+    background-color: rgb(200, 200, 255);
+    cursor: pointer;
+  }
+`;
 
 function Lines({ setGIFURL }) {
   const [loading, setLoading] = useState(true);
@@ -91,44 +100,15 @@ function Lines({ setGIFURL }) {
     <div>
       {lines.map((line) => (
         <div
+          css={lineStyle}
           key={line.start}
           onClick={async (e) => {
             setGIFURL(await API.cut(line.start, line.end));
           }}
         >
-          <div>
-            {line.start}–{line.end}
-          </div>
           <span dangerouslySetInnerHTML={{ __html: line.text }} />
         </div>
       ))}
-    </div>
-  );
-}
-
-const lineStyle = css`
-  color: blue;
-  cursor: pointer;
-  margin-bottom: 10px;
-`;
-
-function ClipDemo({ gifURL, setGIFURL }) {
-  //useEffect(() => fetch('http://localhost:3000/subtitles/?movie_id=123'), []);
-  return (
-    <div>
-      {CLIPS.map((clip) => (
-        <div
-          key={clip.start}
-          css={lineStyle}
-          onClick={async (e) => {
-            setGIFURL(await API.cut(clip.start, clip.end));
-          }}
-        >
-          {clip.label}
-        </div>
-      ))}
-
-      <GIFLoader src={gifURL} />
     </div>
   );
 }
