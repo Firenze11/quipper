@@ -21,13 +21,90 @@ class GenericAPI {
     );
     return response.text();
   }
+
+  async subtitles() {
+    const response = await fetch(this.urlBase + 'subtitles?movie_id=0');
+    return response.json();
+  }
 }
 
 const API = new GenericAPI();
 
 const appStyle = css`
-  padding: 10px;
+  height: 100%;
+  display: grid;
+  grid-template-rows: [header] 100px [output] 1fr [end];
+  grid-template-columns: [left] 50% [right] 50%;
 `;
+
+const headerStyle = css`
+  grid-row: header;
+  grid-column-start: left;
+  grid-column-end: end;
+`;
+
+const linesStyle = css`
+  grid-row: output;
+  grid-column: left;
+  overflow: scroll;
+  background-color: #efefef;
+`;
+
+const viewerStyle = css`
+  grid-row: output;
+  grid-column: right;
+`;
+
+const GifState = { none: 'none', loading: 'loading', ready: 'ready' };
+
+function App() {
+  //useEffect(() => fetch('http://localhost:3000/subtitles/?movie_id=123'), []);
+  const [gifURL, setGIFURL] = useState(null);
+  return (
+    <div css={appStyle}>
+      <div css={headerStyle}>
+        <h1>Quipper</h1>
+      </div>
+      <div css={linesStyle}>
+        <Lines setGIFURL={setGIFURL} />
+      </div>
+      <div css={viewerStyle}>
+        <ClipDemo gifURL={gifURL} setGIFURL={setGIFURL} />
+      </div>
+    </div>
+  );
+}
+
+function Lines({ setGIFURL }) {
+  const [loading, setLoading] = useState(true);
+  const [lines, setLines] = useState([]);
+
+  useEffect(() => {
+    API.subtitles().then((data) => {
+      setLines(data);
+    });
+  }, []);
+
+  // TODO: obviously the dangerouslySetInnerHTML, below, must go!
+
+  return (
+    <div>
+      {lines.map((line) => (
+        <div
+          key={line.start}
+          onClick={async (e) => {
+            setGIFURL(await API.cut(line.start, line.end));
+          }}
+        >
+          <div>
+            {line.start}–{line.end}
+          </div>
+          <span dangerouslySetInnerHTML={{ __html: line.text }} />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const lineStyle = css`
   color: blue;
@@ -35,19 +112,7 @@ const lineStyle = css`
   margin-bottom: 10px;
 `;
 
-const GifState = { none: 'none', loading: 'loading', ready: 'ready' };
-
-function App() {
-  //useEffect(() => fetch('http://localhost:3000/subtitles/?movie_id=123'), []);
-  return (
-    <div css={appStyle}>
-      <ClipDemo />
-    </div>
-  );
-}
-
-function ClipDemo() {
-  const [gifURL, setGIFURL] = useState(null);
+function ClipDemo({ gifURL, setGIFURL }) {
   //useEffect(() => fetch('http://localhost:3000/subtitles/?movie_id=123'), []);
   return (
     <div>
@@ -68,32 +133,35 @@ function ClipDemo() {
   );
 }
 
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function GIFLoader({ src }) {
   const [status, setStatus] = useState(src ? GifState.loading : GifState.none);
 
-  useEffect(() => {
-    console.log('effect', status, src);
-    //setStatus(src ? GifState.loading : GifState.none);
-    if (status !== GifState.ready && src) {
-      console.log('making request now');
-      fetch(src).then((response) => {
-        const mime = response.headers.get('Content-Type');
-        console.log('we got a response');
-        if (mime === 'text/plain') {
-          console.log('still waiting...');
-        } else if (mime === 'image/gif') {
-          console.log('got a gif');
-          setStatus(GifState.ready);
-        } else {
-          console.log(mime);
-        }
-      });
-    } else {
-      console.log('not loading', status, src);
+  async function fetchGIF() {
+    while (true) {
+      const response = await fetch(src);
+      const mime = response.headers.get('Content-Type');
+      if (mime.startsWith('text/plain')) {
+        await delay(1000);
+        continue;
+      } else if (mime === 'image/gif') {
+        setStatus(GifState.ready);
+        break;
+      } else {
+        console.error('unexpected mime-type:', mime);
+      }
     }
-  });
+  }
 
-  console.log('render', status, src);
+  useEffect(() => {
+    if (src) {
+      setStatus(GifState.loading);
+      fetchGIF();
+    }
+  }, [src]);
 
   if (status === GifState.none || !src) {
     return null;

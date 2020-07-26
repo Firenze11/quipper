@@ -3,7 +3,7 @@ import subprocess
 import re
 from datetime import timedelta
 from os import path
-from flask import Blueprint, request, session, url_for, send_from_directory, jsonify
+from flask import Blueprint, request, Response, session, url_for, send_from_directory, jsonify
 from .parse_subtitles import start_subs_at, parse_file, format_time
 
 
@@ -15,17 +15,23 @@ def health():
     return "OK"
 
 
-@bp.route("/subtitles/")
-def get_subtiles():
+@bp.route("/api/subtitles")
+def get_subtitles():
 
     movie_id = request.args.get("movie_id", "")
     # subtitles = parse_file(filepath)
-    filepath = "/data/Spider-Man.Into.the.Spider-Verse.2018.720p.BluRay.x264-SPARKS.srt"
+    filepath = "/data/Spider-Man.Into.The.Spider-Verse.srt"
 
     return jsonify(
         [
-            [[format_time(timerange[0]), format_time(timerange[1])], sentence]
-            for (ind, timerange, sentence) in parse_file(filepath)
+            {
+                "movie": "Spider-man: Into the Spider-Verse",
+                "index": ind,
+                "start": format_time(timerange[0]).replace(',', '.'),
+                "end": format_time(timerange[1]).replace(',', '.'),
+                "text": text
+            }
+            for (ind, timerange, text) in parse_file(filepath)
         ]
     )
 
@@ -67,10 +73,10 @@ def out(filename):
     if path.exists(path.join("/data/out", filename)):
         return send_from_directory("/data/out", filename)
     else:
-        return "processing..."
+        return Response("processing...", mimetype="text/plain")
 
 
-RE_TIMESTAMP = "^(\d{2}):(\d{2}):(\d{2}).(\d{3})$"
+RE_TIMESTAMP = "^(\d{1,2}):(\d{2}):(\d{2}).(\d{3})$"
 
 
 def parse_timestamp(time_str):
