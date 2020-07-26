@@ -26,12 +26,24 @@ class GenericAPI {
     const response = await fetch(this.urlBase + 'subtitles?movie_id=0');
     return response.json();
   }
+
+  async search(serachTerm) {
+    const response = await fetch(
+      this.urlBase +
+        'search?' +
+        new URLSearchParams({ search_term: serachTerm }).toString(),
+    );
+    return response.json();
+  }
 }
 
 const API = new GenericAPI();
 
 const appStyle = css`
+  position: absolute;
   height: 100%;
+  width: 100%;
+  max-width: 1200px;
   display: grid;
   grid-template-rows: [header] 100px [output] 1fr [end];
   grid-template-columns: [left] 50% [right] 50%;
@@ -41,6 +53,14 @@ const headerStyle = css`
   grid-row: header;
   grid-column-start: left;
   grid-column-end: end;
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const titleStyle = css`
+  margin-right: 30px;
 `;
 
 const linesStyle = css`
@@ -58,32 +78,65 @@ const viewerStyle = css`
 const GifState = { none: 'none', loading: 'loading', ready: 'ready' };
 
 function App() {
-  //useEffect(() => fetch('http://localhost:3000/subtitles/?movie_id=123'), []);
   const [gifURL, setGIFURL] = useState(null);
   return (
     <div css={appStyle}>
       <div css={headerStyle}>
-        <h1>Quipper</h1>
-        <Search/>
+        <h1 css={titleStyle}>Quipper</h1>
+        <Search />
       </div>
       <div css={linesStyle}>
         <Lines setGIFURL={setGIFURL} />
       </div>
       <div css={viewerStyle}>
-        <ClipDemo gifURL={gifURL} setGIFURL={setGIFURL} />
+        <GIFLoader src={gifURL} />
       </div>
     </div>
   );
 }
 
+const searchStyle = css`
+  flex: 1;
+  display: flex;
+`;
+
+const inputStyle = css`
+  border: solid #ccc 1px;
+  padding: 0 8px;
+  height: 30px;
+  flex: 1;
+  margin-right: 8px;
+  line-height: 32px;
+  font-size: 18px;
+`;
+
 function Search() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const onSearchtermChange = (event) => {
-    const value = event.target.value
-    setSearchTerm(value)
-  }
-  return <input value={searchTerm} onChange={onSearchtermChange}/>
+  const [searchTerm, setSearchTerm] = useState('');
+  const onSearchTermChange = (event) => {
+    const value = event.target.value;
+    setSearchTerm(value);
+  };
+  const onClickSearch = () => {
+    API.search(searchTerm);
+  };
+  return (
+    <div css={searchStyle}>
+      <input
+        value={searchTerm}
+        onChange={onSearchTermChange}
+        css={inputStyle}
+      />
+      <button onClick={onClickSearch}>Search!</button>
+    </div>
+  );
 }
+
+const lineStyle = css`
+  &:hover {
+    background-color: rgb(200, 200, 255);
+    cursor: pointer;
+  }
+`;
 
 function Lines({ setGIFURL }) {
   const [loading, setLoading] = useState(true);
@@ -101,44 +154,15 @@ function Lines({ setGIFURL }) {
     <div>
       {lines.map((line) => (
         <div
+          css={lineStyle}
           key={line.start}
           onClick={async (e) => {
             setGIFURL(await API.cut(line.start, line.end));
           }}
         >
-          <div>
-            {line.start}–{line.end}
-          </div>
           <span dangerouslySetInnerHTML={{ __html: line.text }} />
         </div>
       ))}
-    </div>
-  );
-}
-
-const lineStyle = css`
-  color: blue;
-  cursor: pointer;
-  margin-bottom: 10px;
-`;
-
-function ClipDemo({ gifURL, setGIFURL }) {
-  //useEffect(() => fetch('http://localhost:3000/subtitles/?movie_id=123'), []);
-  return (
-    <div>
-      {CLIPS.map((clip) => (
-        <div
-          key={clip.start}
-          css={lineStyle}
-          onClick={async (e) => {
-            setGIFURL(await API.cut(clip.start, clip.end));
-          }}
-        >
-          {clip.label}
-        </div>
-      ))}
-
-      <GIFLoader src={gifURL} />
     </div>
   );
 }

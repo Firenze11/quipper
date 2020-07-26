@@ -76,7 +76,7 @@ def search():
     args = search_parser.parse_args()
     search_term = args.get("search_term")
     corpus_path = (
-        "/data/Spider-Man.Into.the.Spider-Verse.2018.720p.BluRay.x264-SPARKS.srt"
+        "/data/Spider-Man.Into.the.Spider-Verse.srt"
     )
     corpus = Searchable(corpus=corpus_path)
     matches = corpus.search(search_term, method="kmp")

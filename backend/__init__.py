@@ -1,11 +1,13 @@
 from flask import Flask
 from flask import request
+from flask_cors import CORS
 import os
 
 
 def create_app(test_config=None):
 
     app = Flask(__name__)
+    CORS(app)
 
     app.config.from_mapping(
         SECRET_KEY="dev",
