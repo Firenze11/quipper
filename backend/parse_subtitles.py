@@ -2,11 +2,18 @@ import sys
 import os
 import re
 from datetime import timedelta
+from typing import NamedTuple, Generator, List
 
 RE_TIME = "^(\d{2}):(\d{2}):(\d{2}),(\d{3})$"
 
 
-def parse_file(filepath):
+class Subtitle(NamedTuple):
+    ind: int
+    time_range: List[timedelta]
+    sentence: str
+
+
+def parse_file(filepath) -> Generator[Subtitle, None, None]:
     # f_out = open("temp.csv", "a+")
 
     with open(filepath, "r", encoding="utf-8-sig") as f_in:
@@ -29,7 +36,7 @@ def parse_file(filepath):
             # f_out.write('"' + " ".join(sentence_list) + '"' + "/n")
             sentence = " ".join(sentence_list)
 
-            yield (ind, time_range, sentence)
+            yield Subtitle(ind=ind, time_range=time_range, sentence=sentence)
             line = f_in.readline()
     # f_out.close()
 
