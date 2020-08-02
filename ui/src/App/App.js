@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react'; // eslint-disable-line
+import React, { useState, useEffect, useCallback } from 'react'; // eslint-disable-line
+import { useHistory, useLocation } from 'react-router-dom';
+import qs from 'query-string';
 
 // this comment tells babel to use emotion's jsx function instead of React.createElement
 /** @jsx jsx */
@@ -31,7 +33,7 @@ class GenericAPI {
     const response = await fetch(
       this.urlBase +
         'search?' +
-        new URLSearchParams({ search_term: serachTerm }).toString(),
+        new URLSearchParams({ search_term: serachTerm }).toString()
     );
     return response.json();
   }
@@ -111,23 +113,38 @@ const inputStyle = css`
 `;
 
 function Search() {
-  const [searchTerm, setSearchTerm] = useState('');
+  // read searchTerm from URL
+  const [urlState, setUrlState] = useUrlState({targetPath: 'search'});
+  // input display defaults to searchTerm in URL
+  const [searchTerm, setSearchTerm] = useState(urlState['searchTerm']);
+
+  // on initial load, do a search if search term is not empty
+  useEffect(() => {
+    if (searchTerm) {
+      API.search(searchTerm);
+    }
+  }, [])
+
   const onSearchTermChange = (event) => {
     const value = event.target.value;
     setSearchTerm(value);
   };
-  const onClickSearch = () => {
+
+  const onSubmit = (e) => {
+    e.preventDefault();
     API.search(searchTerm);
+    setUrlState({ name: 'searchTerm', value: searchTerm });
   };
+  
   return (
-    <div css={searchStyle}>
+    <form css={searchStyle} action="#" onSubmit={onSubmit}>
       <input
         value={searchTerm}
         onChange={onSearchTermChange}
         css={inputStyle}
       />
-      <button onClick={onClickSearch}>Search!</button>
-    </div>
+      <button type="submit">Search!</button>
+    </form>
   );
 }
 
@@ -204,6 +221,31 @@ function GIFLoader({ src }) {
   } else if (status === GifState.ready) {
     return <img src={src} />;
   }
+}
+
+function useUrlState({targetPath}) {
+  const history = useHistory();
+  const location = useLocation();
+  const urlState = qs.parse(location.search);
+  console.log('location.pathname', location.pathname)
+
+  const setUrlState = useCallback(
+    ({ name, value }) => {
+      const newUrlState = {
+        ...urlState,
+        [name]: value,
+      };
+      const searchString = qs.stringify(newUrlState);
+      const pathname = location.pathname === '/' ? targetPath : location.pathname
+      history.push({
+        pathname,
+        search: searchString,
+      });
+    },
+    [history, location.pathname]
+  );
+
+  return [urlState, setUrlState];
 }
 
 export default App;
