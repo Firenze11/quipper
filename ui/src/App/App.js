@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'; // eslint-disable-line
+import React, { useState, useEffect, useCallback, useMemo } from 'react'; // eslint-disable-line
 import { useHistory, useLocation } from 'react-router-dom';
 import qs from 'query-string';
 
@@ -81,14 +81,16 @@ const GifState = { none: 'none', loading: 'loading', ready: 'ready' };
 
 function App() {
   const [gifURL, setGIFURL] = useState(null);
+  const [searchResult, setSearchResult] = useState();
+
   return (
     <div css={appStyle}>
       <div css={headerStyle}>
         <h1 css={titleStyle}>Quipper</h1>
-        <Search />
+        <Search setSearchResult={setSearchResult} />
       </div>
       <div css={linesStyle}>
-        <Lines setGIFURL={setGIFURL} />
+        <Lines searchResult={searchResult} setGIFURL={setGIFURL} />
       </div>
       <div css={viewerStyle}>
         <GIFLoader src={gifURL} />
@@ -112,18 +114,21 @@ const inputStyle = css`
   font-size: 18px;
 `;
 
-function Search() {
+function Search({ setSearchResult }) {
   // read searchTerm from URL
-  const [urlState, setUrlState] = useUrlState({targetPath: 'search'});
+  const [urlState, setUrlState] = useUrlState({ targetPath: 'search' });
   // input display defaults to searchTerm in URL
   const [searchTerm, setSearchTerm] = useState(urlState['searchTerm']);
 
+  const doSearch = async (searchTerm) => {
+    const searchResult = await API.search(searchTerm);
+    setSearchResult(searchResult);
+  };
+
   // on initial load, do a search if search term is not empty
   useEffect(() => {
-    if (searchTerm) {
-      API.search(searchTerm);
-    }
-  }, [])
+    if (searchTerm) doSearch(searchTerm);
+  }, []);
 
   const onSearchTermChange = (event) => {
     const value = event.target.value;
@@ -132,10 +137,10 @@ function Search() {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    API.search(searchTerm);
+    doSearch(searchTerm);
     setUrlState({ name: 'searchTerm', value: searchTerm });
   };
-  
+
   return (
     <form css={searchStyle} action="#" onSubmit={onSubmit}>
       <input
@@ -155,7 +160,7 @@ const lineStyle = css`
   }
 `;
 
-function Lines({ setGIFURL }) {
+function Lines({ searchResult, setGIFURL }) {
   const [loading, setLoading] = useState(true);
   const [lines, setLines] = useState([]);
 
@@ -165,11 +170,19 @@ function Lines({ setGIFURL }) {
     });
   }, []);
 
+  // note that searchResult actually contains all info in lines
+  const matchedLines = useMemo(() => {
+    if (!searchResult) return lines;
+
+    const inds = new Set(searchResult.flatMap((res) => res.map((r) => r.index)));
+    return lines.filter((l) => inds.has(l.index));
+  }, [searchResult, lines]);
+
   // TODO: obviously the dangerouslySetInnerHTML, below, must go!
 
   return (
     <div>
-      {lines.map((line) => (
+      {matchedLines.map((line) => (
         <div
           css={lineStyle}
           key={line.start}
@@ -223,11 +236,13 @@ function GIFLoader({ src }) {
   }
 }
 
-function useUrlState({targetPath}) {
+function useUrlState({ targetPath }) {
   const history = useHistory();
   const location = useLocation();
-  const urlState = qs.parse(location.search);
-  console.log('location.pathname', location.pathname)
+  const urlState = useMemo(() => {
+    console.log('location.pathname', location.pathname);
+    return qs.parse(location.search);
+  }, [location.search]);
 
   const setUrlState = useCallback(
     ({ name, value }) => {
@@ -236,7 +251,8 @@ function useUrlState({targetPath}) {
         [name]: value,
       };
       const searchString = qs.stringify(newUrlState);
-      const pathname = location.pathname === '/' ? targetPath : location.pathname
+      const pathname =
+        location.pathname === '/' ? targetPath : location.pathname;
       history.push({
         pathname,
         search: searchString,
