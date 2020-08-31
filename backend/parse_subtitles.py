@@ -13,7 +13,7 @@ class Subtitle(NamedTuple):
     sentence: str
 
 
-def parse_file(filepath) -> Generator[Subtitle, None, None]:
+def parse_file(filepath, parse_time=True) -> Generator[Subtitle, None, None]:
     # f_out = open("temp.csv", "a+")
 
     with open(filepath, "r", encoding="utf-8-sig") as f_in:
@@ -25,7 +25,7 @@ def parse_file(filepath) -> Generator[Subtitle, None, None]:
 
             line = f_in.readline()
             time_range_strs = line.rstrip().split(" --> ")
-            time_range = [parse_time(t) for t in time_range_strs]
+            time_range = [parse_time(t) for t in time_range_strs] if parse_time else time_range_strs
             # f_out.write(time_range[0] + "," + time_range[1] + ",")
 
             line = f_in.readline()
